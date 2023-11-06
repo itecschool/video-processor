@@ -1,0 +1,31 @@
+{
+    "name": "itecschool/video-processor",
+    "autoload": {
+        "psr-4": {
+            "Itecschool\\VideoProcessor\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Homero Raul",
+            "email": "h.raulvc@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "orchestra/testbench": "^8.14"
+    },
+    "require": {
+        "innoboxrr/larapack-generator": "^3.2",
+        "pbmedia/laravel-ffmpeg": "^8.3"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Itecschool\\VideoProcessor\\Providers\\AppServiceProvider",
+                "Itecschool\\VideoProcessor\\Providers\\AuthServiceProvider",
+                "Itecschool\\VideoProcessor\\Providers\\EventServiceProvider",
+                "Itecschool\\VideoProcessor\\Providers\\RouteServiceProvider"
+            ]
+        }
+    }
+}
