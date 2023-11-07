@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         
         // $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
-        // $this->loadViewsFrom(__DIR__.'/../../resources/views', 'videoprocessor');
+        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'videoprocessor');
 
         if ($this->app->runningInConsole()) {
             

@@ -19,8 +19,9 @@ class RouteServiceProvider extends ServiceProvider
     {
 
         Route::middleware('api')
-            ->prefix('video-processor')
+            ->prefix('video')
             ->as('videoprocessor.')
+            ->middleware('web')
             ->namespace('Itecschool\VideoProcessor\Http\Controllers')
             ->group(__DIR__ . '/../../routes/web.php');
 

@@ -36,10 +36,6 @@ class VideoService
 
         $this->cloudfrontUrl = config('videoprocessor.cloudfront_url');
 
-        $this->videoIdentifier = Str::random(12);
-
-        $this->s3BasePath = $this->getS3BasePath();
-
         $this->checkDependencies();
     }
 
@@ -60,9 +56,50 @@ class VideoService
         return file_exists($this->ffprobePath) && is_executable($this->ffprobePath);
     }
 
-    public function getS3BasePath()
+    public function hls()
     {
-        return 'videos'. DIRECTORY_SEPARATOR . $this->videoIdentifier . DIRECTORY_SEPARATOR;
+
+        // Definir un directorio temporal para el archivo en cuestión
+        $newTempDir = storage_path('app/tmp/' . $this->videoIdentifier);
+
+        // Definir las propiedades de configuración
+        config(['laravel-ffmpeg.temporary_files_root' => $newTempDir . '/root']);
+        
+        config(['laravel-ffmpeg.temporary_files_encrypted_hls' => $newTempDir . '/enc']);
+
+        // Ruta del archivo de video original.
+        $videoPath = 'videos/test.mp4';
+
+        // Ruta donde se guardará el archivo HLS.
+        $hlsOutputPath = 'videos/output/video.m3u8';
+
+        // Abre el video.
+        $video = FFMpeg::open($videoPath);
+
+        // Configura el formato de video a X264.
+        $lowBitrate = new X264('aac', 'libx264');
+        $lowBitrate->setKiloBitrate(250);
+
+        $midBitrate = new X264('aac', 'libx264');
+        $midBitrate->setKiloBitrate(500);
+
+        $highBitrate = new X264('aac', 'libx264');
+        $highBitrate->setKiloBitrate(500);
+
+        // Exporta el video a HLS.
+        $video->exportForHLS()
+            ->setSegmentLength(5) 
+            ->setKeyFrameInterval(48) 
+            ->withRotatingEncryptionKey(function ($filename, $contents) /*use ($video)*/ {
+                Storage::put('keys' . DIRECTORY_SEPARATOR . $filename, $contents);
+            })
+            ->addFormat($lowBitrate)
+            ->addFormat($midBitrate)
+            ->addFormat($highBitrate)
+            ->save($hlsOutputPath);
+
+        return response()->json(['message' => 'Video converted to HLS successfully!']);
+
     }
 
     public function processVideo($videoPath)
@@ -105,11 +142,8 @@ class VideoService
                 })
                 ->addFormat($superBitrate, function($media) {
                     $media->scale(1920, 1080);
-                });
-
-                dd($conv);
-                
-                //->save('hls' . DIRECTORY_SEPARATOR . $this->videoIdentifier . '.m3u8');
+                })
+                ->save('hls' . DIRECTORY_SEPARATOR . $this->videoIdentifier . '.m3u8');
 
             // Limpar los archivos temporales
             FFMpeg::cleanupTemporaryFiles();
