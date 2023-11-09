@@ -24,7 +24,7 @@ class VideoService
 
     public function __construct()
     {
-        $this->ffmpegPath = config('videoprocessor.ffmpeg_path');
+        $this->ffmpegPath = config('videoprocessor.ffmpeg_path'); 
 
         config(['laravel-ffmpeg.ffmpeg.binaries' => $this->ffmpegPath]);
 
