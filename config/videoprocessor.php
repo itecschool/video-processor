@@ -7,5 +7,7 @@ return [
 	'ffprobe_path' => env('FFMPEG_PATH', 'C:/xampp/htdocs/github/itecschool/video-processor/bin/ffmpeg/ffprobe.exe'),
 
     'cloudfront_url' => env('CLOUDFRONT_URL', 'd1st6n2eacne1j.cloudfront.net'),
+
+    'video_path' => env('VIDEO_PATH', 'video'),
 	
 ];

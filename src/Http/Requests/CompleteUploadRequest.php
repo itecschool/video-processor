@@ -12,8 +12,8 @@ class CompleteUploadRequest extends CustomFormRequest
     public function rules()
     {
         return [
-            'filename' => 'required|string',
-            'uploadId' => 'required|string',
+            'video_identifier' => 'required|string',
+            'upload_id' => 'required|string',
             'parts' => 'required|array',
         ];
     }
@@ -23,8 +23,8 @@ class CompleteUploadRequest extends CustomFormRequest
         
         $this->s3->completeMultipartUpload([
             'Bucket' => $this->bucket,
-            'Key' => $this->filename,
-            'UploadId' => $this->uploadId,
+            'Key' => $this->getKey($this->video_identifier),
+            'UploadId' => $this->upload_id,
             'MultipartUpload' => [
                 'Parts' => array_map(function ($part) {
                     return [

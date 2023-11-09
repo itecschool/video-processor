@@ -12,9 +12,9 @@ class SignPartUploadRequest extends CustomFormRequest
     public function rules()
     {
         return [
-            'filename' => 'required|string',
-            'uploadId' => 'required|string',
-            'partNumber' => 'required|integer',
+            'video_identifier' => 'required|string',
+            'upload_id' => 'required|string',
+            'part_number' => 'required|integer',
         ];
     }
 
@@ -24,9 +24,9 @@ class SignPartUploadRequest extends CustomFormRequest
         $url = $this->s3->createPresignedRequest(
             $this->s3->getCommand('UploadPart', [
                 'Bucket' => $this->bucket,
-                'Key' => $this->filename,
-                'UploadId' => $this->uploadId,
-                'PartNumber' => $this->partNumber,
+                'Key' => $this->getKey($this->video_identifier),
+                'UploadId' => $this->upload_id,
+                'PartNumber' => $this->part_number,
             ]),
             '+20 minutes'
         )->getUri();

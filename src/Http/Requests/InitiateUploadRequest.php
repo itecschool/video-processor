@@ -13,7 +13,7 @@ class InitiateUploadRequest extends CustomFormRequest
     public function rules()
     {
         return [
-            'filename' => 'required|string',
+            'video_identifier' => 'required|string', // PENDIENTE: Debe ser único en la base de datos de video
         ];
     }
 
@@ -22,10 +22,10 @@ class InitiateUploadRequest extends CustomFormRequest
         
         $result = $this->s3->createMultipartUpload([
             'Bucket' => $this->bucket,
-            'Key' => $this->filename,
+            'Key' => $this->getKey($this->video_identifier),
         ]);
 
-        return ['uploadId' => $result['UploadId']];
+        return ['upload_id' => $result['UploadId']];
     }
 
 }

@@ -4,6 +4,7 @@ namespace Itecschool\VideoProcessor\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Itecschool\VideoProcessor\Services\VideoService;
+use Itecschool\VideoProcessor\Http\Middleware\Cors;
 
 class AppServiceProvider extends ServiceProvider
 {

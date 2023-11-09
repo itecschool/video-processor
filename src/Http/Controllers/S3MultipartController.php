@@ -11,6 +11,11 @@ use Itecschool\VideoProcessor\Http\Requests\{
 class S3MultipartController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+    }
+
     public function initiateUpload(InitiateUploadRequest $request)
     {
         return $request->handle();

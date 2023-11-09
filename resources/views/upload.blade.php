@@ -21,9 +21,17 @@
 
 	<script>
 
+		// Por favor debes seguir las notas que se muestran a continuación.
+		// Dame un código completo sin omitir ni resumir nada, que esté comentado, y de tal manera que funcione como un módulo ES6
+		// Nota es necesario añadir una validación del archivo para que sea MP4
+		// Tambien necesito que todo lo de fetch lo emplees con axios en lugar de fetch
+
 		const token = document.getElementById('token').value;
 
-	    function MultipartUploader() {
+		/**
+		 * El videoIdentifier es el identificador del video para el reproductor
+		 **/
+	    function MultipartUploader(videoIdentifier) {
 	        
 	        this.isPaused = false;
 	        
@@ -39,7 +47,7 @@
 	        
 	        this.uploadId = null;
 
-	        this.filename = 'videos/aaaaaa/original.mp4'; // Personalizar según corresponda
+	        this.videoIdentifier = videoIdentifier; // Personalizar según corresponda
 
 	    }
 
@@ -57,7 +65,7 @@
 	            
 	            	_token: token, 
 	            
-	            	filename: this.filename 
+	            	video_identifier: this.videoIdentifier 
 	            
 	            }),
 	            
@@ -71,7 +79,7 @@
 	        
 	        const data = await response.json();
 
-	        this.uploadId = data.uploadId;
+	        this.uploadId = data.upload_id;
 
 	        await this.uploadParts(totalParts);
 	    }
@@ -134,11 +142,11 @@
 	        
 	            	_token: token, 
 	        
-	            	filename: this.filename, 
+	            	video_identifier: this.videoIdentifier, 
 	        
-	            	uploadId: this.uploadId, 
+	            	upload_id: this.uploadId, 
 	        
-	            	partNumber 
+	            	part_number: partNumber, // No se si estp cause un error por que solo estába partNumber 
 	        
 	            }),
 	        
@@ -148,8 +156,6 @@
 	            },
 	        
 	        });
-
-	        console.log(signedResponse);
 
 	        const { url } = await signedResponse.json(); // Esta es la URL firmada
 
@@ -197,9 +203,9 @@
 
 	            	_token: token, 
 
-	            	filename: this.filename, 
+	            	video_identifier: this.videoIdentifier, 
 
-	            	uploadId: this.uploadId, 
+	            	upload_id: this.uploadId, 
 
 	            	parts: this.parts 
 
@@ -216,7 +222,10 @@
 
 	    function startFileUpload() {
 
-	        uploader = new MultipartUploader();
+	    	// La generación de este valor es con fines de prueba:
+	    	let random = 'fasdfasdfq3n4fi';
+
+	        uploader = new MultipartUploader(random);
 
 	        const fileInput = document.getElementById('videoFile');
 
