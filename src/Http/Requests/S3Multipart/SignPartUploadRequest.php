@@ -1,6 +1,6 @@
 <?php
 
-namespace Itecschool\VideoProcessor\Http\Requests;
+namespace Itecschool\VideoProcessor\Http\Requests\S3Multipart;
 
 class SignPartUploadRequest extends CustomFormRequest
 {

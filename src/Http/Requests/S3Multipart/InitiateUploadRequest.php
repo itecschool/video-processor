@@ -1,6 +1,6 @@
 <?php
 
-namespace Itecschool\VideoProcessor\Http\Requests;
+namespace Itecschool\VideoProcessor\Http\Requests\S3Multipart;
 
 class InitiateUploadRequest extends CustomFormRequest
 {
@@ -13,7 +13,7 @@ class InitiateUploadRequest extends CustomFormRequest
     public function rules()
     {
         return [
-            'video_identifier' => 'required|string', // PENDIENTE: Debe ser único en la base de datos de video
+            'video_identifier' => 'required|string|unique:videos,code', 
         ];
     }
 

@@ -2,7 +2,7 @@
 
 namespace Itecschool\VideoProcessor\Http\Controllers;
 
-use Itecschool\VideoProcessor\Http\Requests\{
+use Itecschool\VideoProcessor\Http\Requests\S3Multipart\{
     InitiateUploadRequest,
     SignPartUploadRequest,
     CompleteUploadRequest

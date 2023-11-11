@@ -1,6 +1,6 @@
 <?php
 
-namespace Itecschool\VideoProcessor\Http\Requests;
+namespace Itecschool\VideoProcessor\Http\Requests\S3Multipart;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Itecschool\VideoProcessor\Support\Traits\S3Client;
@@ -23,6 +23,9 @@ class CustomFormRequest extends FormRequest
         $this->bucket = $this->s3Bucket();
     }
 
+    /**
+     * @var key hace referencia a la ubicación y nombre del archivo como se almacenará en AWS
+     **/
     protected function getKey($videoIdentifier)
     {
         // PENDIENTE:
