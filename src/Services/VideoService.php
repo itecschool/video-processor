@@ -16,6 +16,10 @@ class VideoService extends AbstractVideoService
     {   
         $video = Video::findOrFail($videoId);
 
+        // Eliminar directorios en S3 (no importa si no existen)
+        Storage::disk('s3')->deleteDirectory($video->s3_hls_path);
+        Storage::disk('s3')->deleteDirectory($video->s3_keys_path);
+
         $video->update([
             'status' => 'processing_started',
         ]);

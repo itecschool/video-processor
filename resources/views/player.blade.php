@@ -455,6 +455,17 @@
 
                 });
 
+            // Verificación de iFrame
+            if (window.self !== window.parent) {
+                
+                // Pendiente: Verificar que se inserte solo dentro de un curso
+
+            } else {
+
+                location.href = '{{ url('/') }}'
+
+            }
+
         </script>
 
     </body>

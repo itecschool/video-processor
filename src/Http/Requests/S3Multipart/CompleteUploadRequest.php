@@ -2,6 +2,9 @@
 
 namespace Itecschool\VideoProcessor\Http\Requests\S3Multipart;
 
+use App\Models\Video;
+use Itecschool\VideoProcessor\Events\VideoUploadSuccessful;
+
 class CompleteUploadRequest extends CustomFormRequest
 {
     public function authorize()
@@ -34,6 +37,10 @@ class CompleteUploadRequest extends CustomFormRequest
                 }, $this->parts),
             ],
         ]);
+
+        $video = Video::where('code', $this->video_identifier)->firstOrFail();
+
+        event(new VideoUploadSuccessful($video->id));
 
         return ['message' => 'Upload completed'];
     }
