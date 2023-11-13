@@ -466,6 +466,42 @@
 
             }
 
+            // Verificar cambios en la visibilidad de la ventana del video
+            document.addEventListener("visibilitychange", function() {
+
+                
+
+                if (document.visibilityState === 'hidden') {
+
+                    console.log('El usuario podría haber cambiado de pestaña o minimizado la ventana');
+
+                } else {
+
+                    console.log('El usuario ha regresado a la ventana');
+
+                }
+
+            });
+
+            // Verificar la inactividad del usuario
+            let inactivityTime = 0;
+
+            function resetInactivityTimer() {
+                inactivityTime = 0;
+            }
+
+            function checkInactivity() {
+                inactivityTime++;
+                if (inactivityTime > 10) { // Por ejemplo, 10 segundos de inactividad
+                    console.log("El usuario podría no estar interactuando con la página");
+                }
+            }
+
+            setInterval(checkInactivity, 1000); // Verifica la inactividad cada segundo
+            document.addEventListener('mousemove', resetInactivityTimer);
+            document.addEventListener('click', resetInactivityTimer);
+            document.addEventListener('keypress', resetInactivityTimer);
+
         </script>
 
     </body>
