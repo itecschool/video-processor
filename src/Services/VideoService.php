@@ -2,162 +2,108 @@
 
 namespace Itecschool\VideoProcessor\Services;
 
-use Illuminate\Support\Str;
-use FFMpeg\Format\Video\X264;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use Itecschool\VideoProcessor\Contracts\Abstracts\AbstractVideoService;
+use App\Models\Video;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use ProtoneMedia\LaravelFFMpeg\Exporters\EncodingException;
-// use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use FFMpeg\Format\Video\X264;
 
-class VideoService
+class VideoService extends AbstractVideoService
 {
-    protected $ffmpegPath;
 
-    protected $ffprobePath;
+    public function processVideo($videoId)
+    {   
+        $video = Video::findOrFail($videoId);
 
-    protected $cloudfrontUrl;
-
-    protected $videoIdentifier;
-
-    protected $s3BasePath;
-
-    public function __construct()
-    {
-        $this->ffmpegPath = config('videoprocessor.ffmpeg_path'); 
-
-        config(['laravel-ffmpeg.ffmpeg.binaries' => $this->ffmpegPath]);
-
-        $this->ffprobePath = config('videoprocessor.ffprobe_path');
-
-        config(['laravel-ffmpeg.ffprobe.binaries' => $this->ffprobePath]);
-
-        config(['laravel-ffmpeg.log_channel' => 'stack']);
-
-        $this->cloudfrontUrl = config('videoprocessor.cloudfront_url');
-
-        $this->checkDependencies();
-    }
-
-    private function checkDependencies()
-    {
-        if (!$this->isFFmpegAvailable() || !$this->isFFprobeAvailable()) {
-            throw new \Exception('FFmpeg 0 FFprobe no está instalado o no es accesible.');
-        }
-    }
-
-    private function isFFmpegAvailable()
-    {
-        return file_exists($this->ffmpegPath) && is_executable($this->ffmpegPath);
-    }
-
-    private function isFFprobeAvailable()
-    {
-        return file_exists($this->ffprobePath) && is_executable($this->ffprobePath);
-    }
-
-    public function hls()
-    {
-
-        // Definir un directorio temporal para el archivo en cuestión
-        $newTempDir = storage_path('app/tmp/' . $this->videoIdentifier);
-
-        // Definir las propiedades de configuración
-        config(['laravel-ffmpeg.temporary_files_root' => $newTempDir . '/root']);
-        
-        config(['laravel-ffmpeg.temporary_files_encrypted_hls' => $newTempDir . '/enc']);
-
-        // Ruta del archivo de video original.
-        $videoPath = 'videos/test.mp4';
-
-        // Ruta donde se guardará el archivo HLS.
-        $hlsOutputPath = 'videos/output/video.m3u8';
-
-        // Abre el video.
-        $video = FFMpeg::open($videoPath);
+        $video->update([
+            'status' => 'processing_started',
+        ]);
 
         // Configura el formato de video a X264.
         $lowBitrate = new X264('aac', 'libx264');
-        $lowBitrate->setKiloBitrate(250);
+        $lowBitrate->setKiloBitrate(500);
 
         $midBitrate = new X264('aac', 'libx264');
-        $midBitrate->setKiloBitrate(500);
+        $midBitrate->setKiloBitrate(1000);
 
         $highBitrate = new X264('aac', 'libx264');
-        $highBitrate->setKiloBitrate(500);
+        $highBitrate->setKiloBitrate(1500);
 
         // Exporta el video a HLS.
-        $video->exportForHLS()
-            ->setSegmentLength(5) 
-            ->setKeyFrameInterval(48) 
-            ->withRotatingEncryptionKey(function ($filename, $contents) /*use ($video)*/ {
-                Storage::put('keys' . DIRECTORY_SEPARATOR . $filename, $contents);
+        $conv = FFMpeg::fromDisk('s3')
+            ->open($video->s3_original_path)
+            ->exportForHLS()
+            ->onProgress(function ($percentage) use ($video) {
+                if($percentage == 100) {
+                    DB::table('videos')->where('id', $video->id)->update([
+                        'status' => 'processing_completed'
+                    ]);
+                }
             })
-            ->addFormat($lowBitrate)
-            ->addFormat($midBitrate)
+            ->setSegmentLength(10) 
+            ->setKeyFrameInterval(48) 
+            ->withRotatingEncryptionKey(function ($filename, $contents) use ($video) {
+
+                Storage::put($video->s3_keys_path . DIRECTORY_SEPARATOR . $filename, $contents);
+
+            })
+            //->addFormat($lowBitrate)
+            //->addFormat($midBitrate)
             ->addFormat($highBitrate)
-            ->save($hlsOutputPath);
+            ->save($video->s3_hls_master);
 
-        return response()->json(['message' => 'Video converted to HLS successfully!']);
+        FFMpeg::cleanupTemporaryFiles();
 
+        DB::table('videos')->where('id', $video->id)->update([
+            'cloud' => 'aws',
+            'status' => 'available_for_viewing'
+        ]);
+
+        return 0;
     }
 
-    /* Creo que este es el que no sirve */
-    public function processVideo($videoPath)
-    {   
+    public function playerResponse($code, $filename) 
+    {
+        $video = $this->getVideoByCode($code);
 
-        try {
+        $path = $video->s3_hls_path . '/' . $filename;
 
-            // Definir un directorio temporal para el archivo en cuestión
-            $newTempDir = storage_path('app/tmp/' . $this->videoIdentifier);
+        return FFMpeg::dynamicHLSPlaylist()
+            ->fromDisk('s3')
+            ->open($path)
+            ->setKeyUrlResolver(function ($key) use ($video) {
 
-            // Definir las propiedades de configuración
-            config(['laravel-ffmpeg.temporary_files_root' => $newTempDir . '/root']);
-            
-            config(['laravel-ffmpeg.temporary_files_encrypted_hls' => $newTempDir . '/enc']);
+                return route('videoprocessor.key', [
+                    'code' => $video->code,
+                    'key' => $key
+                ]);
 
-            $lowBitrate = (new X264)->setKiloBitrate(250);
-            $midBitrate = (new X264)->setKiloBitrate(500);
-            $highBitrate = (new X264)->setKiloBitrate(1000);
-            $superBitrate = (new X264)->setKiloBitrate(1500);
+            })
+            ->setMediaUrlResolver(function ($mediaFilename) use ($video) {
 
+                $path = $video->s3_hls_path . '/' . $mediaFilename;
+                
+                return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(5));
 
-            $conv = FFMpeg::fromDisk('local')
-                ->open($videoPath)
-                ->exportForHLS()
-                ->setSegmentLength(10) 
-                ->setKeyFrameInterval(48) 
-                ->withRotatingEncryptionKey(function ($filename, $contents) /*use ($video)*/ {
+            })
+            ->setPlaylistUrlResolver(function ($playlistFilename) use ($video) {
 
-                    Storage::put('keys' . DIRECTORY_SEPARATOR . $filename, $contents);
+                return route('videoprocessor.playlist', [
+                    'code' => $video->code,
+                    'filename' => $playlistFilename
+                ]);
 
-                })
-                ->addFormat($lowBitrate, function($media) {
-                    $media->scale(640,360);
-                })
-                ->addFormat($midBitrate, function($media) {
-                    $media->scale(842, 480);
-                })
-                ->addFormat($highBitrate, function ($media) {
-                    $media->scale(1280, 720);
-                })
-                ->addFormat($superBitrate, function($media) {
-                    $media->scale(1920, 1080);
-                })
-                ->save('hls' . DIRECTORY_SEPARATOR . $this->videoIdentifier . '.m3u8');
+            });
+    }
 
-            // Limpar los archivos temporales
-            FFMpeg::cleanupTemporaryFiles();
+    public function keyResponse($code, $key) 
+    {
+        $video = $this->getVideoByCode($code);
 
-        } catch (EncodingException $exception) {
-
-            $command = $exception->getCommand();
-
-            $errorLog = $exception->getErrorOutput();
-
-            dd($exception, $command, $errorLog);
-        }
-
+        $path = $video->s3_keys_path . '/' . $key;
+    
+        return Storage::disk('s3')->download($path);
     }
 
 }

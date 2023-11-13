@@ -13,7 +13,7 @@ class InitiateUploadRequest extends CustomFormRequest
     public function rules()
     {
         return [
-            'video_identifier' => 'required|string|unique:videos,code', 
+            'video_identifier' => 'required|string', 
         ];
     }
 

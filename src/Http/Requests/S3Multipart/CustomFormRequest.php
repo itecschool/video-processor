@@ -25,6 +25,7 @@ class CustomFormRequest extends FormRequest
 
     /**
      * @var key hace referencia a la ubicación y nombre del archivo como se almacenará en AWS
+     * Esto debe estár vinculado con getS3OriginalPathAttribute en VideoMutators
      **/
     protected function getKey($videoIdentifier)
     {

@@ -5,6 +5,11 @@ namespace Itecschool\VideoProcessor\Providers;
 use Illuminate\Support\ServiceProvider;
 use Itecschool\VideoProcessor\Services\VideoService;
 use Itecschool\VideoProcessor\Http\Middleware\Cors;
+// use Illuminate\Console\Scheduling\Schedule;
+use Itecschool\VideoProcessor\Console\Commands\{
+    ProcessVideoCommand,
+    VimeoVideoUploader
+};
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +39,11 @@ class AppServiceProvider extends ServiceProvider
             $this->publishes([__DIR__.'/../../config/videoprocessor.php' => config_path('videoprocessor.php')], 'config');
 
         }
+
+        $this->commands([
+            ProcessVideoCommand::class,
+            VimeoVideoUploader::class,
+        ]);
 
     }
     

@@ -2,27 +2,33 @@
 
 use Illuminate\Support\Facades\Route;
 
-
 // Testing
 
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Artisan;
 use Itecschool\VideoProcessor\Services\VideoService;
+use Itecschool\VideoProcessor\Jobs\VimeoVideoUploadJob;
 
 Route::get('test', function(VideoService $videoService) {
+	/*
+	Artisan::call('vimeo:upload', [
+            'videoId' => 5
+        ]);
 
-	$res = $videoService->hls();
+	dd();
+	*/
 
-	dd($res);
+	\App\Models\Video::where('status', 'active')
+		->where('cloud', 'vimeo')
+		->get()
+		->map(function( $video ) {
+
+		VimeoVideoUploadJob::dispatch($video->id);
+
+	});
 
 });
 
-// Subida
-
-Route::get('upload', function() {
-
-	return view('videoprocessor::upload');
-
-});
+// Rutas de la aplicación
 
 Route::post('initiate-upload', 'S3MultipartController@initiateUpload')
 	->name('initiate.upload');
@@ -36,12 +42,11 @@ Route::post('complete-upload', 'S3MultipartController@completeUpload')
 
 // Procesamiento y reproducción
 
+Route::get('player/{code}', 'VideoController@player')
+	->name('player');
 
-Route::get('secret/{id}/{key}', 'VideoProcessorController@key')
-	->name('videoprocessor.key');
+Route::get('playlist/{code}/{filename}', 'VideoController@playlist')
+	->name('playlist');
 
-Route::get('playlist/{id}/{filename}', 'VideoProcessorController@playlist')
-	->name('videoprocessor.playlist');
-
-Route::get('player/{id}', 'VideoProcessorController@player')
-	->name('videoprocessor.player');
+Route::get('secret/{code}/{key}', 'VideoController@key')
+	->name('key');

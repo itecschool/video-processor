@@ -17,6 +17,12 @@ class EventServiceProvider extends ServiceProvider
         // Model::class => [ModelObserver::class],
     ];
 
+    protected $listen = [
+        'Itecschool\VideoProcessor\Events\VideoUploadSuccessful' => [
+            'Itecschool\VideoProcessor\Listeners\ProcessVideoHLS',
+        ],
+    ];
+
     public function boot()
     {
 
