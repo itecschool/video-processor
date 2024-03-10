@@ -15,7 +15,7 @@
         "orchestra/testbench": "^8.14"
     },
     "require": {
-        "innoboxrr/larapack-generator": "^3.2",
+        "innoboxrr/larapack-generator": "^3.2|^4.0",
         "pbmedia/laravel-ffmpeg": "^8.3"
     },
     "extra": {
