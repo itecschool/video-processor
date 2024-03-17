@@ -124,7 +124,7 @@
                 infoIcon: "/plugins/videojs8/examples/assets/images/logo_small.png",  // optional
                 infoUrl: "https://www.nuevodevel.com/nuevo/showcase/videoinfo",  // optional
                 infoTitle: "{{ $video->lesson->name }}",
-                infoDescription: "{{ $video->user->name }}",
+                infoDescription: "{{ $video?->user?->name }}",
 
                 // ** Logos **
                 logo: "/plugins/videojs8/examples/assets/images/logo.png", // (undefined)

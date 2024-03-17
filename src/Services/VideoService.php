@@ -49,7 +49,7 @@ class VideoService extends AbstractVideoService
             ->setKeyFrameInterval(48) 
             ->withRotatingEncryptionKey(function ($filename, $contents) use ($video) {
 
-                Storage::put($video->s3_keys_path . DIRECTORY_SEPARATOR . $filename, $contents);
+                Storage::disk('s3')->put($video->s3_keys_path . DIRECTORY_SEPARATOR . $filename, $contents);
 
             })
             //->addFormat($lowBitrate)
