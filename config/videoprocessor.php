@@ -7,9 +7,9 @@ return [
 
 	'ffmpeg_path' => env('FFMPEG_PATH', 'C:/xampp/htdocs/github/itecschool/video-processor/bin/ffmpeg/ffmpeg.exe'),
 
-	'ffprobe_path' => env('FFMPEG_PATH', 'C:/xampp/htdocs/github/itecschool/video-processor/bin/ffmpeg/ffprobe.exe'),
+	'ffprobe_path' => env('FFPROBE_PATH', 'C:/xampp/htdocs/github/itecschool/video-processor/bin/ffmpeg/ffprobe.exe'),
 
-	's3_url' => env('S3_URL', 'https://itecschool.s3.amazonaws.com'),
+	's3_url' => env('S3_URL', 'https://itecschool.s3.amazonaws.com'), 
 
     'cloudfront_url' => env('CLOUDFRONT_URL', 'd1st6n2eacne1j.cloudfront.net'),
 
